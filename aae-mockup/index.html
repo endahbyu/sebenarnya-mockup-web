@@ -3,7 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>[hidden]{display:none!important}body{margin:0}</style>
+<style>[hidden]{display:none!important}body{margin:0}
+/* auto-rotating cards in section 2 */
+#hot-grid .post>*{transition:opacity .45s ease}
+#hot-grid .post.is-swapping>*{opacity:0}
+.rot-ctrl{display:flex;align-items:center;gap:12px;padding:0 0 24px}
+.rot-dots{display:flex;gap:6px}
+.rot-dots i{width:6px;height:6px;border-radius:50%;background:var(--stone);transition:background .3s,width .3s}
+.rot-dots i.on{width:18px;border-radius:3px;background:var(--ink)}
+.rot-btn{font:inherit;font-size:var(--fs-caption);font-weight:600;color:var(--ink);background:none;border:1px solid var(--stone);border-radius:999px;padding:4px 12px;cursor:pointer}
+.rot-btn:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){#hot-grid .post>*{transition:none}}
+</style>
 <title>Sebenarnya.my</title>
 <meta name="description" content="Semak kesahihan berita dan isu tular di Malaysia sebelum kongsi.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -657,7 +668,7 @@ a:hover .card-title,.post .card-title a:hover{text-decoration:underline;text-und
     </div>
   </article>
   <div class="top-wrap top-wrap-2"><div class="top-main">
-  <section class="grid" aria-label="Isu terkini"><article class="post" data-cat="Ekonomi">
+  <section class="grid" id="hot-grid" aria-label="Isu terkini"><article class="post" data-cat="Ekonomi">
   <a class="post-media" href="#berita-bayaranstr" tabindex="-1" aria-hidden="true"><img data-img="bayaranstr.jpg" alt="" width="900" height="506" loading="lazy"></a>
   <div class="post-meta"><span class="status st-palsu">Palsu</span><span class="pm">Tular: 29 Okt 2026</span></div>
   <h3 class="card-title"><a href="#berita-bayaranstr">Dakwaan Terdapat Jadual Bayaran STR Fasa 4 Pada 30 Oktober 2026 Adalah Tidak Benar</a></h3>
@@ -673,6 +684,7 @@ a:hover .card-title,.post .card-title a:hover{text-decoration:underline;text-und
   <h3 class="card-title"><a href="#berita-budimadani">Belanjawan 2027 BUDI MADANI Terus Meringankan Beban Kos Bahan Api Rakyat</a></h3>
   <p class="post-desc">Menurut Kementerian Kewangan Malaysia (MOF), kerajaan meneruskan usaha meringankan beban rakyat menerusi inisiatif BUDI MADANI di bawah Belanjawan 2027 bagi memastikan penyaluran subsidi bahan api disasarkan secara adil dan saksama.</p>
 </article></section>
+  <div class="rot-ctrl"><div class="rot-dots" id="rot-dots" aria-hidden="true"></div></div>
   </div>
   <aside class="latest" aria-labelledby="recent-h">
     <div class="latest-head"><h2 id="recent-h">Semakan terbaharu</h2></div>
@@ -1063,6 +1075,26 @@ document.getElementById('pg-next').onclick=()=>{location.hash='halaman-2'};
  const kick=()=>{if(!raf)raf=requestAnimationFrame(tick)};
  hero.addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;const r=hero.getBoundingClientRect();tx=(e.clientX-r.left)/r.width*2-1;ty=(e.clientY-r.top)/r.height*2-1;kick()});
  hero.addEventListener('pointerleave',()=>{tx=0;ty=0;kick()})})();
+</script>
+<script>
+(()=>{const g=document.getElementById('hot-grid');if(!g)return;
+const cards=[...g.querySelectorAll(':scope>.post')];const n=cards.length;
+const extra=['berita-school4','berita-school5','berita-extrafee'];
+const pool=cards.map(c=>({html:c.innerHTML,cat:c.dataset.cat}));
+extra.forEach(h=>{const a=document.querySelector('#more-grid .post a[href="#'+h+'"]');const c=a&&a.closest('.post');if(c)pool.push({html:c.innerHTML,cat:c.dataset.cat})});
+const pages=Math.ceil(pool.length/n);let page=0,paused=false,hover=false,t;
+const dots=document.getElementById('rot-dots');
+dots.innerHTML='<i></i>'.repeat(pages);
+const mark=()=>[...dots.children].forEach((d,k)=>d.classList.toggle('on',k===page));
+const fill=c=>c.querySelectorAll('img[data-img]').forEach(i=>{i.src=IMG[i.dataset.img]});
+const show=p=>{page=p;cards.forEach((c,k)=>{const it=pool[(p*n+k)%pool.length];c.classList.add('is-swapping');setTimeout(()=>{c.innerHTML=it.html;c.dataset.cat=it.cat;fill(c);c.classList.remove('is-swapping')},450)});mark()};
+const rm=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const tick=()=>{if(!paused&&!hover&&!document.hidden)show((page+1)%pages)};
+mark();if(rm)paused=true;
+t=setInterval(tick,6000);
+g.addEventListener('mouseenter',()=>hover=true);g.addEventListener('mouseleave',()=>hover=false);
+g.addEventListener('focusin',()=>hover=true);g.addEventListener('focusout',()=>hover=false);
+})();
 </script>
 </body>
 </html>
